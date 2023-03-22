@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import ShopifyClient
 import ShopifyKit
 import SwiftLinuxNetworking
 
