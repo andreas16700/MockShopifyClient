@@ -9,6 +9,10 @@ import Foundation
 import ShopifyKit
 import SwiftLinuxNetworking
 
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
+
 struct Blank: Codable{}
 struct Wrapper<T: Codable>: Codable{
 	let content: T
@@ -124,7 +128,7 @@ public struct MockShClient: ShopifyClientProtocol{
 	}
 	
 	func sendRequest<T: Encodable, T2: Decodable>(path: String, method: String, body: T, expect: T2.Type)async ->T2?{
-		let url = baseURL.appending(path: path)
+		let url = baseURL.customAppendingPath(path: path)
 		var r: URLRequest = .init(url: url)
 		r.httpMethod = method
 		do{
@@ -520,5 +524,15 @@ extension Array where Element == SHOption{
 extension SHOption{
 	mutating func applyUpdate(from: SHOption){
 		
+	}
+}
+public extension URL{
+	func customAppendingPath(path: String)->Self{
+		let u: URL = .init(string: path)!
+		var s = self
+		for p in u.pathComponents{
+			s = s.appendingPathComponent(p)
+		}
+		return s
 	}
 }
