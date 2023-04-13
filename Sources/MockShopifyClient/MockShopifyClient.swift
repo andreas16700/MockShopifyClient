@@ -141,7 +141,7 @@ public struct MockShClient: ShopifyClientProtocol{
 				let urlResp = response as! HTTPURLResponse
 				let wentOK = urlResp.statusCode >= 200 && urlResp.statusCode <= 299
 				guard wentOK else {
-					reportError("Error \(urlResp.statusCode) for request at \(url)")
+					print("Error \(urlResp.statusCode) for request at \(url)")
 					if T2.self == Bool.self{
 						return (false as! T2)
 					}
@@ -153,22 +153,22 @@ public struct MockShClient: ShopifyClientProtocol{
 					let decoded = try decoder.decode(expect, from: respData)
 					return decoded
 				}catch{
-					reportError("Error decoding response: \(error)")
+					print("Error decoding response: \(error)")
 					return nil
 				}
 			}catch{
-				reportError("Error sending request to \(url): \(error)")
+				print("Error sending request to \(url): \(error)")
 				return nil
 			}
 		}catch{
-			reportError("Error encoding payload: \(error)")
+			print("Error encoding payload: \(error)")
 			return nil
 		}
 		
 	}
 	//MARK: Pagination
 	public func getAllPaginated<T>(resourceName: String, countGetter: () async -> Int?, pageGetter: @escaping (Int) async -> [T]?) async -> [T]? {
-		guard let count = await countGetter() else {reportError("Nil count for resource \(resourceName)!"); return nil}
+		guard let count = await countGetter() else {print("Nil count for resource \(resourceName)!"); return nil}
 		guard count>0 else {return []}
 		var pages = count / Self.pageCapacity
 		if (count % Self.pageCapacity != 0){pages+=1}
@@ -224,7 +224,7 @@ public struct MockShClient: ShopifyClientProtocol{
 //				let urlResp = response as! HTTPURLResponse
 //				let wentOK = urlResp.statusCode >= 200 && urlResp.statusCode <= 299
 //				guard wentOK else {
-//					reportError("Error \(urlResp.statusCode) for request at \(url)")
+//					print("Error \(urlResp.statusCode) for request at \(url)")
 //					if T2.self == Bool.self{
 //						return (false as! T2)
 //					}
@@ -236,15 +236,15 @@ public struct MockShClient: ShopifyClientProtocol{
 //					let decoded = try decoder.decode(expect, from: respData)
 //					return decoded
 //				}catch{
-//					reportError("Error decoding response: \(error)")
+//					print("Error decoding response: \(error)")
 //					return nil
 //				}
 //			}catch{
-//				reportError("Error sending request to \(url): \(error)")
+//				print("Error sending request to \(url): \(error)")
 //				return nil
 //			}
 //		}catch{
-//			reportError("Error encoding payload: \(error)")
+//			print("Error encoding payload: \(error)")
 //			return nil
 //		}
 //
@@ -383,12 +383,12 @@ public struct MockShClient: ShopifyClientProtocol{
 //		return true
 //	}
 //
-//	private func reportError(_ msg: String){
+//	private func print(_ msg: String){
 //		print(msg)
 //	}
 //	private func productIDAndIndexOfVariant(variantID: Int)->(Int,Int)?{
 //		guard let productID = productsByID.first(where: {$0.value.variants.contains(where: {v in v.id == variantID})})?.key else {
-//			reportError("No variant with id \(variantID)")
+//			print("No variant with id \(variantID)")
 //			return nil
 //		}
 //		let variantIndex = productsByID[productID]!.variants.firstIndex(where: {$0.id == variantID})!
@@ -400,9 +400,9 @@ public struct MockShClient: ShopifyClientProtocol{
 //			if let variantIndex = product.variants.firstIndex(where: {$0.id == variantID}){
 //				return variantIndex
 //			}
-//			reportError("product \(productID) has no variant \(variantID)")
+//			print("product \(productID) has no variant \(variantID)")
 //		}
-//		reportError("no product with id \(productID)")
+//		print("no product with id \(productID)")
 //		return nil
 //	}
 //
