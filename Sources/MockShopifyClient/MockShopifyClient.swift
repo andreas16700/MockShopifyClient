@@ -42,6 +42,10 @@ public struct MockShClient: ShopifyClientProtocol{
 		return await sendRequest(path: "variants", method: "PUT", body: update, expect: SHVariant.self)
 	}
 	
+	public func updateVariants(with updates: [SHVariantUpdate]) async -> [SHVariant]? {
+		return await sendRequest(path: "variants/multiple", method: "PUT", body: updates, expect: [SHVariant].self)
+	}
+	
 	public func createNewVariant(variant: SHVariantUpdate, for productID: Int) async -> SHVariant? {
 		return await sendRequest(path: "\(productID)", method: "POST", body: variant, expect: SHVariant.self)
 	}
@@ -92,8 +96,16 @@ public struct MockShClient: ShopifyClientProtocol{
 		return await sendRequest(path: "inventories", method: "PUT", body: update, expect: InventoryLevel.self)
 	}
 	
+	public func updateInventories(updates: [(ShopifyKit.InventoryLevel, ShopifyKit.SHInventorySet)]) async -> [ShopifyKit.InventoryLevel]? {
+		let body = updates.map(\.1)
+		return await sendRequest(path: "inventories/multiple", method: "PUT", body: body, expect: [InventoryLevel].self)
+	}
+	
 	public func getInventory(of invItemID: Int) async -> InventoryLevel? {
 		return await sendRequest(path: "inventory/\(invItemID)", method: "GET", expect: InventoryLevel.self)
+	}
+	public func getInventories(of invItemIDs: [Int]) async -> [InventoryLevel]? {
+		return await sendRequest(path: "inventories/multiple", method: "GET", body: invItemIDs, expect: [InventoryLevel].self)
 	}
 	public func getInventoriesPage(pageNum: Int) async -> [InventoryLevel]?{
 		return await sendRequest(path: "inventories/page/\(pageNum)", method: "GET", expect: [InventoryLevel].self)
