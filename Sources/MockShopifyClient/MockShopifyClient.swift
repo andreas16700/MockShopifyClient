@@ -97,9 +97,8 @@ public struct MockShClient: ShopifyClientProtocol{
 		return await sendRequest(path: "inventories", method: "PUT", body: update, expect: InventoryLevel.self)
 	}
 	
-	public func updateInventories(updates: [(ShopifyKit.InventoryLevel, ShopifyKit.SHInventorySet)]) async -> [ShopifyKit.InventoryLevel]? {
-		let body = updates.map(\.1)
-		return await sendRequest(path: "inventories/multiple", method: "PUT", body: body, expect: [InventoryLevel].self)
+	public func updateInventories(updates: [SHInventorySet]) async -> [ShopifyKit.InventoryLevel]? {
+		return await sendRequest(path: "inventories/multiple", method: "PUT", body: updates, expect: [InventoryLevel].self)
 	}
 	
 	public func getInventory(of invItemID: Int) async -> InventoryLevel? {
