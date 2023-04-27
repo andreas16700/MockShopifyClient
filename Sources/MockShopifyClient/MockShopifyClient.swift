@@ -43,6 +43,7 @@ public struct MockShClient: ShopifyClientProtocol{
 	}
 	
 	public func updateVariants(with updates: [SHVariantUpdate]) async -> [SHVariant]? {
+		
 		return await sendRequest(path: "variants/multiple", method: "PUT", body: updates, expect: [SHVariant].self)
 	}
 	
@@ -105,7 +106,7 @@ public struct MockShClient: ShopifyClientProtocol{
 		return await sendRequest(path: "inventory/\(invItemID)", method: "GET", expect: InventoryLevel.self)
 	}
 	public func getInventories(of invItemIDs: [Int]) async -> [InventoryLevel]? {
-		return await sendRequest(path: "inventories/multiple", method: "GET", body: invItemIDs, expect: [InventoryLevel].self)
+		return await sendRequest(path: "inventories/multiple", method: "POST", body: invItemIDs, expect: [InventoryLevel].self)
 	}
 	public func getInventoriesPage(pageNum: Int) async -> [InventoryLevel]?{
 		return await sendRequest(path: "inventories/page/\(pageNum)", method: "GET", expect: [InventoryLevel].self)
