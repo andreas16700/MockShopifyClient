@@ -43,12 +43,14 @@ public struct MockShClient: ShopifyClientProtocol{
 	}
 	
 	public func updateVariants(with updates: [SHVariantUpdate]) async -> [SHVariant]? {
-		
 		return await sendRequest(path: "variants/multiple", method: "PUT", body: updates, expect: [SHVariant].self)
 	}
 	
 	public func createNewVariant(variant: SHVariantUpdate, for productID: Int) async -> SHVariant? {
 		return await sendRequest(path: "\(productID)", method: "POST", body: variant, expect: SHVariant.self)
+	}
+	public func createNewViariants(variants: [SHVariantUpdate], for productID: Int) async -> [SHVariant]? {
+		return await sendRequest(path: "\(productID)/multiple", method: "POST", body: variants, expect: [SHVariant].self)
 	}
 	//MARK: Product
 	public func deleteProduct(id: Int) async -> Bool {
@@ -97,7 +99,7 @@ public struct MockShClient: ShopifyClientProtocol{
 		return await sendRequest(path: "inventories", method: "PUT", body: update, expect: InventoryLevel.self)
 	}
 	
-	public func updateInventories(updates: [SHInventorySet]) async -> [ShopifyKit.InventoryLevel]? {
+	public func updateInventories(updates: [SHInventorySet]) async -> [InventoryLevel]? {
 		return await sendRequest(path: "inventories/multiple", method: "PUT", body: updates, expect: [InventoryLevel].self)
 	}
 	
