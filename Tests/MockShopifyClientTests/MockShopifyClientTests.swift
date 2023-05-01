@@ -64,6 +64,54 @@ final class MockShopifyClientTests: XCTestCase {
 	enum Resource: String{
 		case items, models,stocks
 	}
+//	func testUpdatesVars
+	func testUpdateVariants()async throws{
+		print("Will test some variants methods. Will first find a product.")
+		let handles = try await XCTUnwrapAsync(await Self.client.getProductsPage(pageNum: 1)).map(\.handle)
+		let aHandle = try XCTUnwrap(handles.randomElement())
+		print("Chose product with handle \(aHandle)")
+		let product = try await XCTUnwrapAsync(await Self.client.getProduct(withHandle: aHandle))
+		
+		let variants = product.variants
+		
+		
+		let countOfUpdates = Int.random(in: 1..<variants.count)
+		let varsToUpdate = variants[0..<countOfUpdates]
+		print("Will attempt to update \(countOfUpdates) variants. (IDs:\(varsToUpdate.map(\.id).commaSepString())")
+//		return .init(id: self.id, option1: opt1, option2: opt2, option3: opt3, price: p, compare_at_price: c, sku: nil, title: nil, barcode: UUID().uuidString)
+		let updates = varsToUpdate.map{$0.randomUpdate()}
+		let achieved = try await XCTUnwrapAsync(await Self.client.updateVariants(with: updates))
+		func testPriceString(o: String?, other: String?, tolerance: Double = 0.01)throws{
+			if let o=o, let num = Double(o){
+				let otherStr = try XCTUnwrap(other)
+				let otherNum = try XCTUnwrap(Double(otherStr))
+				let diff = abs(otherNum-num)
+				XCTAssert(diff<=tolerance)
+			}
+		}
+		for intendedUpdate in updates{
+			let achievedUpdate = try XCTUnwrap(achieved.first(where:{$0.id == intendedUpdate.id}))
+			XCTAssertEqual(intendedUpdate.option1, achievedUpdate.option1)
+			XCTAssertEqual(intendedUpdate.option2, achievedUpdate.option2)
+			XCTAssertEqual(intendedUpdate.option3, achievedUpdate.option3)
+			try testPriceString(o: intendedUpdate.price, other: achievedUpdate.price)
+			try testPriceString(o: intendedUpdate.compare_at_price, other: achievedUpdate.compareAtPrice)
+			XCTAssertEqual(intendedUpdate.barcode, achievedUpdate.barcode)
+		}
+		let countOfNewVars = Int.random(in: 1..<variants.count)
+		let newVarsRequests = variants[0..<countOfNewVars].map{$0.newRandomEntry()}
+		let achievedNewVars = try await XCTUnwrapAsync(await Self.client.createNewViariants(variants: newVarsRequests, for: product.id!))
+		for achievedUpdate in achievedNewVars {
+			let intendedUpdate = try XCTUnwrap(newVarsRequests.first(where: {$0.sku == achievedUpdate.sku}))
+			XCTAssertEqual(intendedUpdate.option1, achievedUpdate.option1)
+			XCTAssertEqual(intendedUpdate.option2, achievedUpdate.option2)
+			XCTAssertEqual(intendedUpdate.option3, achievedUpdate.option3)
+			try testPriceString(o: intendedUpdate.price, other: achievedUpdate.price)
+			try testPriceString(o: intendedUpdate.compare_at_price, other: achievedUpdate.compareAtPrice)
+			XCTAssertEqual(intendedUpdate.barcode, achievedUpdate.barcode)
+			XCTAssertEqual(intendedUpdate.title, achievedUpdate.title)
+		}
+	}
 }
 public func XCTUnwrapAsync<T>(_ expression: @autoclosure () async throws -> T?, _ message: @autoclosure () -> String = "")async throws->T{
 	let expr = try await expression()
@@ -95,5 +143,34 @@ extension Int{
 			r = Int.random(in: 0...9999)
 		}while (self != r)
 		return r
+	}
+}
+extension SHVariant{
+	func newRandomEntry()->SHVariantUpdate{
+		var u = randomUpdate()
+		return .init(id: nil, option1: u.option1, option2: u.option2, option3: u.option3, price: u.price, compare_at_price: u.compare_at_price, sku: UUID().uuidString, title: "Some New Variant \(UUID().uuidString.prefix(4))", barcode: UUID().uuidString)
+		
+	}
+	func randomUpdate()->SHVariantUpdate{
+		func updateValueOnlyIfExists(getter: ()->String?, setter: (String)->()){
+			if let exists = getter(){
+				setter(exists+"-updated")
+			}
+		}
+		var opt1: String? = nil
+		var opt2: String? = nil
+		var opt3: String? = nil
+		updateValueOnlyIfExists(getter: {self.option1}, setter: {opt1=$0})
+		updateValueOnlyIfExists(getter: {self.option2}, setter: {opt2=$0})
+		updateValueOnlyIfExists(getter: {self.option3}, setter: {opt3=$0})
+		var p: String? = nil
+		if let doublePrice = Double(price){
+			p = "\(doublePrice + Double.random(in: -50...6_000))"
+		}
+		var c: String? = nil
+		if let comp = compareAtPrice, let doublePrice = Double(comp){
+			c = "\(doublePrice + Double.random(in: -50...6_000))"
+		}
+		return .init(id: self.id, option1: opt1, option2: opt2, option3: opt3, price: p, compare_at_price: c, sku: nil, title: nil, barcode: UUID().uuidString)
 	}
 }
