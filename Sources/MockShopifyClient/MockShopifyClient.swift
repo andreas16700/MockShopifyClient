@@ -22,11 +22,12 @@ public struct MockShClient: ShopifyClientProtocol{
 	public init(baseURL: URL) {
 		self.baseURL = baseURL
 		let c = URLSessionConfiguration.default
-		c.timeoutIntervalForRequest = .infinity
-		c.timeoutIntervalForResource = .infinity
+		c.timeoutIntervalForRequest = Self.TIMEOUT_FOR_REQUESTS
+		c.timeoutIntervalForResource = Self.TIMEOUT_FOR_REQUESTS
 		self.session = .init(configuration: c)
 	}
 	let session: URLSession
+	static let TIMEOUT_FOR_REQUESTS: TimeInterval = 5_000_000
 	static let pageCapacity = 10000
 	let baseURL: URL
 	let encoder = JSONEncoder()
